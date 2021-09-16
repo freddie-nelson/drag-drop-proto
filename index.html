@@ -148,6 +148,10 @@
       if (!inGroup) d.innerText = "";
     }
 
+    window.addEventListener("resize", () => {
+      draggers.forEach(d => checkGroup(d))
+    })
+
     const releaseDragger = () => {
       if (!grabbing) return;
 
