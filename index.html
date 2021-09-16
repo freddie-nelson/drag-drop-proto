@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag and Drop</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      position: relative;
+      height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .dragger {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 80px;
+      height: 80px;
+      border-radius: 5px;
+      cursor: grab;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      font-size: 2rem;
+      user-select: none;
+    }
+
+    .dragger.blue {
+      background-color: blue;
+    }
+
+    .dragger.red {
+      background-color: red;
+    }
+
+    .dragger.orange {
+      background-color: rgb(255, 115, 0);
+    }
+
+    .dragger.green {
+      background-color: green;
+    }
+
+    .dragger.black {
+      background-color: black;
+    }
+
+    .dragger.pink {
+      background-color: hotpink;
+    }
+
+    .dragger.cyan {
+      background-color: aquamarine;
+    }
+
+    .group {
+      width: 31vw;
+      height: 31vw;
+      border: 2px solid black;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 4rem;
+      color: rgba(0, 0, 0, 0.404)
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    // create groups
+    const groups = [];
+
+    for (let i = 0; i < 2; i++) {
+      const g = document.createElement("div");
+      g.classList.add("group");
+      g.setAttribute("tag", String.fromCharCode(65 + i))
+      g.innerText = String.fromCharCode(65 + i);
+
+      document.body.appendChild(g);
+      groups.push(g);
+    }
+
+    // create draggers
+    const draggers = [];
+    const colors = ["blue", "red", "orange", "green", "black", "pink", "cyan"];
+
+    for (let i = 0; i < 8; i++) {
+      const d = document.createElement("div");
+      d.classList.add("dragger");
+      d.classList.add(colors[Math.floor(Math.random() * colors.length)]);
+
+      document.body.appendChild(d);
+      draggers.push(d);
+    }
+
+    const mouse = {
+      x: 0,
+      y: 0
+    }
+
+    let grabbing = null;
+
+    const dragGrabber = () => {
+      if (!grabbing) return;
+
+      const rect = grabbing.getBoundingClientRect();
+      grabbing.style.transform = `translate(${mouse.x - rect.width / 2}px, ${mouse.y - rect.height / 2}px)`;
+    }
+
+    window.addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      dragGrabber()
+    });
+
+    const checkGroup = (d) => {
+      // check if dragger is in group
+      const dRect = d.getBoundingClientRect();
+      let inGroup = false;
+      groups.forEach(g => {
+        const gRect = g.getBoundingClientRect();
+
+        if (dRect.x + dRect.width >= gRect.x && dRect.x < gRect.x + gRect.width && dRect.y + dRect.height >= gRect.y && dRect.y < gRect.y + gRect.height) {
+          d.innerText = g.getAttribute("tag");
+          inGroup = true;
+        }
+      });
+
+      if (!inGroup) d.innerText = "";
+    }
+
+    const releaseDragger = () => {
+      if (!grabbing) return;
+
+      checkGroup(grabbing);
+      grabbing = null;
+    }
+
+    window.addEventListener("mouseup", releaseDragger);
+
+    const grabDragger = (d) => {
+      if (grabbing) return;
+      grabbing = d;
+
+      const rect = d.getBoundingClientRect();
+      d.style.transform = `translate(${mouse.x - rect.width / 2}px, ${mouse.y - rect.height / 2}px)`;
+    }
+
+    // setup draggers
+    draggers.forEach(d => {
+      d.addEventListener("mousedown", () => grabDragger(d));
+
+      // give random position
+      d.style.transform = `translate(${Math.floor(Math.random() * (window.innerWidth - 70))}px, ${Math.floor(Math.random() * (window.innerHeight - 70))}px)`;
+      
+      // run group detections
+      checkGroup(d);
+    })
+  </script>
+</body>
+</html>
